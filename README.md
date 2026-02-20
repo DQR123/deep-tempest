@@ -107,8 +107,9 @@ conda activate deeptempest
 For Ubuntu users that want a fast setup and bug check workflow, use the helper script at repository root:
 
 ```shell
-python3 run_deeptempest_ubuntu.py check
+python3 run_deeptempest_ubuntu.py doctor
 python3 run_deeptempest_ubuntu.py compile
+python3 run_deeptempest_ubuntu.py generate --output-dir ./tmp-generated
 ```
 
 Recommended base packages on Ubuntu:
@@ -121,8 +122,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-The `check` command validates Python version, required folders, and core Python dependencies.
+The `doctor` command validates Python version, required folders, and core Python dependencies.
 The `compile` command compiles all Python files to detect syntax-level issues before running capture or training flows.
+The `generate` command runs a smoke test around `text_generation/generate_random_text.py`.
 
 Regarding installations with GNU Radio, **it is necessary to use the [gr-tempest](./gr-tempest/) version in this repository** *(which contains a modified version of the original gr-tempest)*. After this, run the following *grc* files flowgraphs to activate the *hierblocks*:
 - [binary_serializer.grc](./gr-tempest/examples/binary_serializer.grc)

@@ -12,7 +12,7 @@ TEXT_SIZE = 22
 today = date.today()
 
 # Month abbreviation, day and year	
-save_path = today.strftime("%b-%d-%Y")
+save_path = os.environ.get("DEEPTEMPEST_OUTPUT_DIR", today.strftime("%b-%d-%Y"))
 
 if not os.path.exists(save_path):
     os.mkdir(save_path)
@@ -20,8 +20,10 @@ else:
     i = 2
     save_path_tmp = save_path + str(i)
     while os.path.exists(save_path_tmp):
-        i+=1
+        i += 1
         save_path_tmp = save_path + str(i)
+    save_path = save_path_tmp
+    os.mkdir(save_path)
 
 images_name = "generated_text"
 
