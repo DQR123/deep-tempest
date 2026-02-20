@@ -110,7 +110,7 @@ def main(json_path='options/train_drunet.json'):
     #     nb = 17               # fixed
 
     model_path = opt['path']['pretrained_netG']
-    pretrain_name = model_path.split('/')[-1].split('.')[0]
+    pretrain_name = os.path.splitext(os.path.basename(model_path))[0]
     model_name = 'DRUNet_'+pretrain_name
     result_name = f'eval_std{args.noise_level_img}_{model_name}'     # fixed
     border = args.sf if args.task_current == 'sr' else 0        # shave boader to calculate PSNR and SSIM
