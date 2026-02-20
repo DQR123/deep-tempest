@@ -1,7 +1,67 @@
-from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
 import random
-import string
+
+from PIL import Image, ImageDraw, ImageFont
 from matplotlib import font_manager
+
+
+BLOCKED_FONT_KEYWORDS = {
+    "lohit",
+    "kacst",
+    "navilu",
+    "telu",
+    "lyx",
+    "malayalam",
+    "tlwg",
+    "samyak",
+    "droid",
+    "kalapi",
+    "openoffice",
+    "orya",
+}
+
+
+def _get_readable_system_fonts():
+    """Return TTF/OTF fonts that are usually readable across OSes."""
+    system_fonts = font_manager.findSystemFonts()
+    valid_extensions = {".ttf", ".otf"}
+    readable_fonts = []
+
+    for font_path in system_fonts:
+        lowercase_path = font_path.lower()
+        if Path(lowercase_path).suffix not in valid_extensions:
+            continue
+        if any(keyword in lowercase_path for keyword in BLOCKED_FONT_KEYWORDS):
+            continue
+        readable_fonts.append(font_path)
+
+    return readable_fonts
+
+
+def _load_font(font_path, text_size):
+    """Load font and provide cross-platform fallbacks (Linux/Windows/macOS)."""
+    if font_path:
+        try:
+            return ImageFont.truetype(font=font_path, size=text_size)
+        except OSError:
+            pass
+
+    fallback_candidates = [
+        # Windows common fonts
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/calibri.ttf",
+        # Linux common fonts
+        "/usr/share/fonts/truetype/liberation2/LiberationSans-BoldItalic.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ]
+
+    for fallback_path in fallback_candidates:
+        try:
+            return ImageFont.truetype(font=fallback_path, size=text_size)
+        except OSError:
+            continue
+
+    return ImageFont.load_default()
 
 def generate_random_txt_img(text, img_shape, text_size, text_color, background_color, save_path):
     # Create white plain image
@@ -13,23 +73,12 @@ def generate_random_txt_img(text, img_shape, text_size, text_color, background_c
     N_lines = N_total//img_shape[1]
     N_horizontal = int(1.6 * img_shape[0] // (text_size))
 
-    # Get system font types
-    system_fonts = font_manager.findSystemFonts()
-    # Filter out some non-readable fonts
-    ttf_fonts = [font for font in system_fonts if ((".ttf" in font) and ("lohit" not in font) and ("kacst" not in font)) and  ("Navilu" not in font) and ("telu" not in font) and ("lyx" not in font) and ("malayalam" not in font) and ("tlwg" not in font) and ("samyak" not in font) and ("droid" not in font) and ("kalapi" not in font) and ("openoffice" not in font) and ("orya" not in font)]
+    readable_fonts = _get_readable_system_fonts()
 
     # Write over image one font per line
     for iter in range(N_lines):
-        rnd_font_index = random.randint(0,len(ttf_fonts)-1)
-        random_font = ttf_fonts[rnd_font_index]
-        # print(f"Font N {iter}: {random_font}")
-
-        # Load text font and set size
-        try:
-            fuente = ImageFont.truetype(font=random_font, size=text_size)
-        except:
-            # Load a fixed font when crashes
-            fuente = ImageFont.truetype("/usr/share/fonts/truetype/liberation2/LiberationSans-BoldItalic.ttf", size=text_size)
+        random_font = random.choice(readable_fonts) if readable_fonts else None
+        fuente = _load_font(random_font, text_size)
 
         # Get line text
         texto_linea = text[iter * N_horizontal : (iter+1) * N_horizontal]
@@ -44,4 +93,3 @@ def generate_random_txt_img(text, img_shape, text_size, text_color, background_c
 
     # Save image
     imagen.save(save_path)
-
